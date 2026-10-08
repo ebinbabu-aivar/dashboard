@@ -22,6 +22,7 @@ import (
 	"strings"
 	"time"
 
+	"github.com/tektoncd/dashboard/pkg/auth"
 	"github.com/tektoncd/dashboard/pkg/csrf"
 	"github.com/tektoncd/dashboard/pkg/endpoints"
 	logging "github.com/tektoncd/dashboard/pkg/logging"
@@ -122,7 +123,7 @@ func makeUpgradeTransport(config *rest.Config, keepalive time.Duration) (proxy.U
 }
 
 // Register returns a HTTP handler with the Dashboard and Kubernetes APIs registered
-func Register(r endpoints.Resource, cfg *rest.Config) (*Server, error) {
+func Register(r endpoints.Resource, cfg *rest.Config, authSvc *auth.Service) (*Server, error) {
 	logging.Log.Info("Adding Kube API")
 	apiProxyPrefix := "/api/"
 	apisProxyPrefix := "/apis/"
@@ -141,7 +142,14 @@ func Register(r endpoints.Resource, cfg *rest.Config) (*Server, error) {
 	registerReadinessProbe(r, mux)
 	registerLogsProxy(r, mux)
 
-	return &Server{handler: mux}, nil
+	handler := http.Handler(mux)
+	if authSvc != nil && authSvc.Enabled() {
+		logging.Log.Info("Enabling OIDC authentication")
+		authSvc.RegisterRoutes(mux)
+		handler = authSvc.Middleware(mux)
+	}
+
+	return &Server{handler: handler}, nil
 }
 
 // NewProxyHandler creates an API proxy handler for the cluster

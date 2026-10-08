@@ -3,8 +3,10 @@ module github.com/tektoncd/dashboard
 go 1.24.1
 
 require (
+	github.com/coreos/go-oidc/v3 v3.11.0
 	github.com/tektoncd/plumbing v0.0.0-20221005125931-631bdcbca245
 	go.uber.org/zap v1.27.0
+	golang.org/x/oauth2 v0.28.0
 	k8s.io/apimachinery v0.34.1
 	k8s.io/client-go v0.34.1
 )

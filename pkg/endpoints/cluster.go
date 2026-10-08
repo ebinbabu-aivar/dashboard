@@ -27,6 +27,8 @@ type Properties struct {
 	DefaultNamespace   string   `json:"defaultNamespace,omitempty"`
 	ExternalLogsURL    string   `json:"externalLogsURL"`
 	LogoutURL          string   `json:"logoutURL,omitempty"`
+	LoginURL           string   `json:"loginURL,omitempty"`
+	AuthEnabled        bool     `json:"authEnabled,omitempty"`
 	PipelineNamespace  string   `json:"pipelinesNamespace"`
 	PipelineVersion    string   `json:"pipelinesVersion"`
 	ReadOnly           bool     `json:"isReadOnly"`
@@ -53,6 +55,8 @@ func (r Resource) GetProperties(response http.ResponseWriter, _ *http.Request) {
 		PipelineVersion:    pipelineVersion,
 		ReadOnly:           r.Options.ReadOnly,
 		LogoutURL:          r.Options.LogoutURL,
+		LoginURL:           r.Options.LoginURL,
+		AuthEnabled:        r.Options.AuthEnabled,
 		TenantNamespaces:   r.Options.TenantNamespaces,
 		StreamLogs:         r.Options.StreamLogs,
 	}

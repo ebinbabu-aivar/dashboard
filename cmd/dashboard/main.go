@@ -18,6 +18,7 @@ import (
 	"os"
 	"strings"
 
+	"github.com/tektoncd/dashboard/pkg/auth"
 	"github.com/tektoncd/dashboard/pkg/endpoints"
 	"github.com/tektoncd/dashboard/pkg/logging"
 	"github.com/tektoncd/dashboard/pkg/router"
@@ -42,8 +43,17 @@ var (
 
 func main() {
 	flag.Parse()
+	authCfg := auth.LoadConfig()
 	installNamespace := os.Getenv("INSTALLED_NAMESPACE")
 	logging.InitLogger(*logLevel, *logFormat)
+
+	authSvc := auth.New(authCfg)
+	if authCfg.Enabled && !authCfg.Valid() {
+		logging.Log.Fatal("auth-enabled requires issuer, client credentials, redirect URL, and cookie secret")
+	}
+	if authSvc.Enabled() {
+		logging.Log.Infof("Dashboard auth: %s", authSvc.Describe())
+	}
 
 	var cfg *rest.Config
 	var err error
@@ -71,6 +81,8 @@ func main() {
 		DefaultNamespace:   *defaultNamespace,
 		ReadOnly:           *readOnly,
 		LogoutURL:          *logoutURL,
+		LoginURL:           authSvc.LoginPath(),
+		AuthEnabled:        authSvc.Enabled(),
 		StreamLogs:         *streamLogs,
 		ExternalLogsURL:    *externalLogs,
 		XFrameOptions:      *xFrameOptions,
@@ -82,7 +94,12 @@ func main() {
 		Options:   options,
 	}
 
-	server, err := router.Register(resource, cfg)
+	if authSvc.Enabled() && options.LogoutURL == "" {
+		options.LogoutURL = authSvc.LogoutPath()
+		resource.Options = options
+	}
+
+	server, err := router.Register(resource, cfg, authSvc)
 
 	if err != nil {
 		logging.Log.Errorf("Error creating proxy: %s", err.Error())

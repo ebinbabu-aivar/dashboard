@@ -18,6 +18,7 @@ This guide explains how to build, deploy and test the Tekton Dashboard. It cover
     - [Linter](#linter)
   - [i18n](#i18n)
   - [Storybook](#storybook)
+  - [Optional OIDC authentication](./auth-oidc.md)
   - [Next steps](#next-steps)
 
 ## Pre-requisites

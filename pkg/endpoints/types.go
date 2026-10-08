@@ -27,6 +27,8 @@ type Options struct {
 	DefaultNamespace   string
 	ReadOnly           bool
 	LogoutURL          string
+	LoginURL           string
+	AuthEnabled        bool
 	StreamLogs         bool
 	ExternalLogsURL    string
 	XFrameOptions      string
